@@ -1,5 +1,7 @@
 # The function to plot parameters
 import matplotlib.pylab as plt
+import torch
+import torch.nn as nn
 
 def PlotParameters(model): 
     W = model.state_dict()['fc1.weight'].data
@@ -50,4 +52,36 @@ def plot_loss_accuracy(loss_list, accuracy_list):
     fig.tight_layout()
 
     # Show the plot
-    plt.show()  
+    plt.show()
+
+
+def display_misclassified(validation_dataset, model):
+    # Plot the misclassified samples
+    Softmax_fn=nn.Softmax(dim=-1)
+    count = 0
+    for x, y in validation_dataset:
+        z = model(x.reshape(-1, 28 * 28))
+        _, yhat = torch.max(z, 1)
+        if yhat != y:
+            show_data((x, y))
+            plt.show()
+            print("yhat:", yhat)
+            print("probability of class ", torch.max(Softmax_fn(z)).item())
+            count += 1
+        if count >= 5:
+            break 
+
+def display_correct(validation_dataset, model):
+    Softmax_fn=nn.Softmax(dim=-1)
+    count = 0
+    for x, y in validation_dataset:
+        z = model(x.reshape(-1, 28 * 28))
+        _, yhat = torch.max(z, 1)
+        if yhat == y:
+            show_data((x, y))
+            plt.show()
+            print("yhat:", yhat)
+            print("probability of class ", torch.max(Softmax_fn(z)).item())
+            count += 1
+        if count >= 5:
+            break  

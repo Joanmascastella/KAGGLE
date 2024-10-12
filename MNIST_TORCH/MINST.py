@@ -89,3 +89,9 @@ train_model(n_epochs)
 
 # Call the function to plot loss and accuracy
 useful_functions.plot_loss_accuracy(loss_list, accuracy_list)
+
+# Call the function to display misclassified items 
+useful_functions.display_misclassified(validation_dataset, model)
+
+#Call the function to display the correctly classified items
+useful_functions.display_correct(validation_dataset, model)
