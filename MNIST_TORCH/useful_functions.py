@@ -26,3 +26,4 @@ def PlotParameters(model):
 def show_data(data_sample):
     plt.imshow(data_sample[0].numpy().reshape(28, 28), cmap='gray')
     plt.title('y = ' + str(data_sample[1]))
+    plt.show()  

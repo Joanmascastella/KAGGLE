@@ -18,6 +18,8 @@ validation_dataset = dsets.MNIST(root='./data', train=False, download=True, tran
 print("Type of data element: ", type(train_dataset[0][1]))
 print("The label: ", train_dataset[3][1])
 print("\n")
+
+#Display images to again verify that they were correctly downloaded 
 print("Image from train dataset")
 useful_functions.show_data(train_dataset[3])
 print("\n")
