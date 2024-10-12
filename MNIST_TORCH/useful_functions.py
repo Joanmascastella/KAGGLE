@@ -26,4 +26,28 @@ def PlotParameters(model):
 def show_data(data_sample):
     plt.imshow(data_sample[0].numpy().reshape(28, 28), cmap='gray')
     plt.title('y = ' + str(data_sample[1]))
+    plt.show()
+
+# Plot the loss and accuracy
+def plot_loss_accuracy(loss_list, accuracy_list):
+    fig, ax1 = plt.subplots()
+
+    # Plotting the loss on the first y-axis
+    color = 'tab:red'
+    ax1.plot(loss_list, color=color)
+    ax1.set_xlabel('epoch', color=color)
+    ax1.set_ylabel('total loss', color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    # Creating a second y-axis for the accuracy
+    ax2 = ax1.twinx()
+    color = 'tab:blue'
+    ax2.set_ylabel('accuracy', color=color)
+    ax2.plot(accuracy_list, color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    # Adjust layout to prevent overlapping labels
+    fig.tight_layout()
+
+    # Show the plot
     plt.show()  
