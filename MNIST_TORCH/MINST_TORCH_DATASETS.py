@@ -28,7 +28,6 @@ validation_transforms = transforms.Compose([
 train_dataset = dsets.MNIST(root='./data', train=True, download=True, transform=train_transforms)
 validation_dataset = dsets.MNIST(root='./data', train=False, download=True, transform=validation_transforms)
 
-
 # Verify that the data was correctly downloaded
 print("Type of data element: ", type(train_dataset[0][1]))
 print("The label: ", train_dataset[3][1])
@@ -100,6 +99,10 @@ def train_model(n_epochs):
         accuracy_list.append(accuracy)
 
 train_model(n_epochs)
+
+# Print final accuracy
+final_accuracy = accuracy_list[-1]  # Get the last recorded accuracy
+print(f"Final validation accuracy after {n_epochs} epochs: {final_accuracy * 100:.2f}%")
 
 # Call the function to plot loss and accuracy
 useful_functions.plot_loss_accuracy(loss_list, accuracy_list)
