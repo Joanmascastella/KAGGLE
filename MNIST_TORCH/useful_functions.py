@@ -2,7 +2,7 @@
 import matplotlib.pylab as plt
 
 def PlotParameters(model): 
-    W = model.state_dict()['linear.weight'].data
+    W = model.state_dict()['fc1.weight'].data
     w_min = W.min().item()
     w_max = W.max().item()
     fig, axes = plt.subplots(2, 5)
