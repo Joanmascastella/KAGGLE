@@ -5,7 +5,6 @@ import torchvision.datasets as dsets
 import matplotlib.pylab as plt
 import numpy as np
 import ssl
-import pandas as pd
 import useful_functions
 
 # Disable SSL verification to allow unverified downloads due to 403 errors from downloading the MNIST datasets
@@ -28,7 +27,7 @@ validation_transforms = transforms.Compose([
 # Download the train and validation datasets with the respective transforms
 train_dataset = dsets.MNIST(root='./data', train=True, download=True, transform=train_transforms)
 validation_dataset = dsets.MNIST(root='./data', train=False, download=True, transform=validation_transforms)
-submission_file = pd.read_csv("./sample_submission.csv")
+
 
 # Verify that the data was correctly downloaded
 print("Type of data element: ", type(train_dataset[0][1]))
