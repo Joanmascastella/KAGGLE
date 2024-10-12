@@ -1,8 +1,9 @@
-# The function to plot parameters
 import matplotlib.pylab as plt
 import torch
 import torch.nn as nn
 
+
+# The function to plot parameters
 def PlotParameters(model): 
     W = model.state_dict()['fc1.weight'].data
     w_min = W.min().item()
@@ -22,9 +23,9 @@ def PlotParameters(model):
             ax.set_yticks([])
 
         # Ensure the plot is shown correctly with multiple plots
-        # in a single Notebook cell.
     plt.show()
 
+# The function that displays image from dataset
 def show_data(data_sample):
     plt.imshow(data_sample[0].numpy().reshape(28, 28), cmap='gray')
     plt.title('y = ' + str(data_sample[1]))
@@ -54,9 +55,9 @@ def plot_loss_accuracy(loss_list, accuracy_list):
     # Show the plot
     plt.show()
 
-
+# Plot the misclassified samples
 def display_misclassified(validation_dataset, model):
-    # Plot the misclassified samples
+
     Softmax_fn=nn.Softmax(dim=-1)
     count = 0
     for x, y in validation_dataset:
@@ -71,6 +72,7 @@ def display_misclassified(validation_dataset, model):
         if count >= 5:
             break 
 
+# Plot the correctly classified samples
 def display_correct(validation_dataset, model):
     Softmax_fn=nn.Softmax(dim=-1)
     count = 0
