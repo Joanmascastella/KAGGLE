@@ -41,27 +41,36 @@ useful_functions.show_data(validation_dataset[1])
 
 # Creating a SoftMax classifier model
 class SoftMaxClassifier(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size1, hidden_size2, output_size):
         super(SoftMaxClassifier, self).__init__()
-        
         # Define the layers
-        self.fc1 = nn.Linear(input_size, hidden_size)  # Input to hidden layer
-        self.relu = nn.ReLU()  # ReLU activation
-        self.fc2 = nn.Linear(hidden_size, output_size)  # Hidden to output layer
+        self.fc1 = nn.Linear(input_size, hidden_size1)  # Input to first hidden layer
+        self.relu1 = nn.ReLU()  # ReLU activation for first hidden layer
+        self.fc2 = nn.Linear(hidden_size1, hidden_size2)  # First hidden to second hidden layer
+        self.relu2 = nn.ReLU()  # ReLU activation for second hidden layer
+        self.fc3 = nn.Linear(hidden_size2, output_size)  # Second hidden to output layer
         
+        # Initialize weights using Kaiming normalization
+        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="relu")
+        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="relu")
+        torch.nn.init.kaiming_normal_(self.fc3.weight)
+
     def forward(self, x):
-        x = self.fc1(x)    # First layer
-        x = self.relu(x)   # Activation
-        x = self.fc2(x)    # Second layer
+        x = self.fc1(x)      # First layer
+        x = self.relu1(x)    # Activation for first layer
+        x = self.fc2(x)      # Second layer
+        x = self.relu2(x)    # Activation for second layer
+        x = self.fc3(x)      # Output layer
         return x
 
 # Define the input, hidden, and output sizes
-input_dim = 28 * 28
-hidden_dim = 64
-output_dim = 10
+input_dim = 28 * 28  # Input size (28x28 pixels)
+hidden_dim1 = 64     # Size of the first hidden layer
+hidden_dim2 = 32     # Size of the second hidden layer
+output_dim = 10      # Output size (10 classes for MNIST)
 
-# Create the model and visualize the initial weights
-model = SoftMaxClassifier(input_dim, hidden_dim, output_dim)
+# Create the model with two hidden layers
+model = SoftMaxClassifier(input_dim, hidden_dim1, hidden_dim2, output_dim)
 useful_functions.PlotParameters(model)
 
 # Define the learning rate, optimizer, and loss function
