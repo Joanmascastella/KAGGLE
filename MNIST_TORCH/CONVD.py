@@ -9,6 +9,10 @@ import useful_functions
 # Disable SSL verification to allow unverified downloads
 ssl._create_default_https_context = ssl._create_unverified_context
 
+# Check if MPS is available, else use CPU
+device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
+print(f"Using device: {device}")
+
 # Data Augmentation for training set
 train_transforms = transforms.Compose([
     transforms.RandomRotation(10),
@@ -74,9 +78,8 @@ class CNNClassifier(nn.Module):
         x = self.fc2(x)  # Output layer
         return x
 
-# Define the model
-model = CNNClassifier()
-# useful_functions.PlotParameters(model)
+# Define the model and move it to the device (MPS or CPU)
+model = CNNClassifier().to(device)
 
 # Define the optimizer, learning rate, and loss function
 learning_rate = 0.1
@@ -88,7 +91,7 @@ train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=100
 validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, batch_size=5000, shuffle=False)
 
 # Train model
-n_epochs = 10
+n_epochs = 100
 loss_list = []
 accuracy_list = []
 N_test = len(validation_dataset)
@@ -96,6 +99,7 @@ N_test = len(validation_dataset)
 def train_model(n_epochs):
     for epoch in range(n_epochs):
         for x, y in train_loader:
+            x, y = x.to(device), y.to(device)  # Move data to device
             optimizer.zero_grad()
             z = model(x)  # Input is now passed as is (not flattened)
             loss = criterion(z, y)
@@ -105,6 +109,7 @@ def train_model(n_epochs):
         correct = 0
         # Perform validation
         for x_test, y_test in validation_loader:
+            x_test, y_test = x_test.to(device), y_test.to(device)  # Move data to device
             z = model(x_test)
             _, yhat = torch.max(z.data, 1)
             correct += (yhat == y_test).sum().item()
@@ -117,15 +122,3 @@ train_model(n_epochs)
 # Print final accuracy
 final_accuracy = accuracy_list[-1]
 print(f"Final validation accuracy after {n_epochs} epochs: {final_accuracy * 100:.2f}%")
-
-# # Call the function to plot loss and accuracy
-# useful_functions.plot_loss_accuracy(loss_list, accuracy_list)
-
-# # Call the function to display misclassified items 
-# useful_functions.display_misclassified(validation_dataset, model)
-
-# # Call the function to display the correctly classified items
-# useful_functions.display_correct(validation_dataset, model)
-
-# Plot the model parameters (optional)
-# useful_functions.PlotParameters(model)
