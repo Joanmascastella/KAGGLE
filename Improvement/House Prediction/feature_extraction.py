@@ -63,5 +63,32 @@ def extract_features(train_data_loader, test_data_loader, input_size, hidden_siz
 
         print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_data_loader)}")
 
+        # Feature extraction on both train and test datasets
+        train_features = []
+        test_features = []
+
+        autoencoder.eval()
+
+        #Extract Train Features
+        with torch.no_grad():
+            for data in train_data_loader:
+                inputs, _ = data
+                inputs = inputs.to(torch.float32)
+                _, latent_space = autoencoder(inputs)
+                train_features.append(latent_space)
+
+        with torch.no_grad():
+            for data in test_data_loader:
+                inputs, _ = data
+                inputs = inputs.to(torch.float32)
+                _, latent_space = autoencoder(inputs)
+                test_features.append(latent_space)
+
+        #Conver the lists back to tensors
+        train_features = torch.cat(train_features, dim=0).cpu().numpy()
+        test_features = torch.cat(test_features, dim=0).cpu().numpy()
+
+        return train_features, test_features
+
 
 
