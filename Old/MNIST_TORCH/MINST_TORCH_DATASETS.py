@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 import torchvision.datasets as dsets
-import matplotlib.pylab as plt
-import numpy as np
 import ssl
 import useful_functions
 

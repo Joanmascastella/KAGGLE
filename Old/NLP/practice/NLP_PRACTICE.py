@@ -4,8 +4,8 @@ from sklearn import feature_extraction, linear_model, model_selection, preproces
 
 #Load train and test data into their respective data frames
 
-train_df = pd.read_csv('/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/train.csv')
-test_df = pd.read_csv('/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/test.csv')
+train_df = pd.read_csv('/Old/NLP/kaggle/train.csv')
+test_df = pd.read_csv('/Old/NLP/kaggle/test.csv')
 
 #now that our data is loaded into their respective data frames, lets take a look at what they contain 
 
@@ -61,7 +61,7 @@ print(f"\n {scores} \n")
 
 clf.fit(train_vectors, train_df["target"])
 
-sample_submission = pd.read_csv("/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/sample_submission.csv")
+sample_submission = pd.read_csv("/Old/NLP/kaggle/sample_submission.csv")
 
 sample_submission["target"] = clf.predict(test_vectors)
 print(sample_submission.head())

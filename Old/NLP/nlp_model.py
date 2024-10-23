@@ -7,8 +7,8 @@ from sklearn.model_selection import train_test_split
 from keras import metrics
 
 # Load train and test data into their respective data frames
-train_df = pd.read_csv('/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/train.csv')
-test_df = pd.read_csv('/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/test.csv')
+train_df = pd.read_csv('/Old/NLP/kaggle/train.csv')
+test_df = pd.read_csv('/Old/NLP/kaggle/test.csv')
 
 # Building vectors using Keras TextVectorization layer
 vectorizer = tf.keras.layers.TextVectorization(max_tokens=20000, output_mode='tf-idf')
@@ -109,7 +109,7 @@ best_model.fit(train_vectors_np, train_df["target"], epochs=best_params['epochs'
 test_predictions = (best_model.predict(test_vectors_np) > 0.5).astype(int)
 
 # Prepare submission file
-sample_submission = pd.read_csv("/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/sample_submission.csv")
+sample_submission = pd.read_csv("/Old/NLP/kaggle/sample_submission.csv")
 sample_submission["target"] = test_predictions
 
 # Print and save the submission file

@@ -6,8 +6,8 @@ from sklearn.metrics import f1_score
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Load train and test data into their respective data frames
-train_df = pd.read_csv('/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/train.csv')
-test_df = pd.read_csv('/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/test.csv')
+train_df = pd.read_csv('/Old/NLP/kaggle/train.csv')
+test_df = pd.read_csv('/Old/NLP/kaggle/test.csv')
 
 # Using TfidfVectorizer from sklearn to build vectors
 vectorizer = TfidfVectorizer(max_features=20000)
@@ -70,7 +70,7 @@ best_model.fit(train_vectors_np, train_df["target"])
 test_predictions = best_model.predict(test_vectors_np)
 
 # Prepare submission file
-sample_submission = pd.read_csv("/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/sample_submission.csv")
+sample_submission = pd.read_csv("/Old/NLP/kaggle/sample_submission.csv")
 sample_submission["target"] = test_predictions
 
 # Print and save the submission file

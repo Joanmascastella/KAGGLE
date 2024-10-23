@@ -7,8 +7,8 @@ from transformers import BertTokenizer, BertModel
 import torch
 
 # Load train and test data into their respective data frames
-train_df = pd.read_csv('/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/train.csv')
-test_df = pd.read_csv('/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/test.csv')
+train_df = pd.read_csv('/Old/NLP/kaggle/train.csv')
+test_df = pd.read_csv('/Old/NLP/kaggle/test.csv')
 
 # Initialize BERT tokenizer and model
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -78,7 +78,7 @@ best_model.fit(train_embeddings, train_df["target"])
 test_predictions = best_model.predict(test_embeddings)
 
 # Prepare submission file
-sample_submission = pd.read_csv("/Users/joanmascastella/Desktop/CODE/backup/NLP/kaggle/sample_submission.csv")
+sample_submission = pd.read_csv("/Old/NLP/kaggle/sample_submission.csv")
 sample_submission["target"] = test_predictions
 
 # Print and save the submission file
