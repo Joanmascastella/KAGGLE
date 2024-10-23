@@ -1,94 +1,102 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import helpful_functions as hf
 
+
+# Define the Autoencoder Model
 class Autoencoder(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(Autoencoder, self).__init__()
 
-        #Encoder
-        #Encoder deconstructs the data
+        # Encoder
         self.encoder = nn.Sequential(
             nn.Linear(input_size, 128),
             nn.ReLU(),
-            nn.Linear(128,hidden_size)
+            nn.Linear(128, hidden_size)  # Latent space
         )
 
-        #Decoder
-        #Decoder reconstructs the data and measure its loss
+        # Decoder
         self.decoder = nn.Sequential(
             nn.Linear(hidden_size, 128),
             nn.ReLU(),
-            nn.Linear(128,input_size),
-            nn.Sigmoid()
+            nn.Linear(128, input_size),
+            nn.Sigmoid()  # Ensure output values are between 0 and 1
         )
 
-        #Forward Pass
-        # Perfoms encoder and reconstruction
-        def forward(self, x):
-            latent_space = self.encoder(x)
-            reconstructed = self.decoder(latent_space)
-            return reconstructed, latent_space
+    def forward(self, x):
+        latent_space = self.encoder(x)
+        reconstructed = self.decoder(latent_space)
+        return reconstructed, latent_space
 
 
+# Function to extract features using autoencoder
 def extract_features(train_data_loader, test_data_loader, input_size, hidden_size, learning_rate=0.0005, num_epochs=30):
-    #Initializing autoencoder model
-    autoencoder = Autoencoder(input_size = input_size, hidden_size = hidden_size)
+    device = hf.get_device()  # Get the appropriate device (MPS, CUDA, or CPU)
 
-    #Loss and optimizer
+    # Initialize the autoencoder model and move to device
+    autoencoder = Autoencoder(input_size=input_size, hidden_size=hidden_size).to(device)
+
+    # Loss function and optimizer
     criterion = nn.MSELoss()
     optimizer = optim.Adam(autoencoder.parameters(), lr=learning_rate)
 
-    #Training Loop
+    # To store the loss over epochs for plotting
+    all_losses = []
+
+    # Training loop
     for epoch in range(num_epochs):
         autoencoder.train()
         running_loss = 0.0
 
         for data in train_data_loader:
-            inputs, _ = data # For the autoencoder we don't need to pass the labels we just need the inputs
-            inputs = inputs.to(torch.float32)
+            inputs, _ = data  # For the autoencoder, we only need the inputs
+            inputs = inputs.to(device).float()  # Move data to device
 
-            #Forward Pass: reconstruct the input
+            # Forward pass: reconstruct the input
             reconstructed, _ = autoencoder(inputs)
 
-            #Compute reconstruction loss
+            # Compute reconstruction loss
             loss = criterion(reconstructed, inputs)
 
-            #Backward pass and optimization
+            # Backward pass and optimization
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
             running_loss += loss.item()
 
-        print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_data_loader)}")
+        # Log and store loss
+        epoch_loss = running_loss / len(train_data_loader)
+        all_losses.append(epoch_loss)
+        print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {epoch_loss:.4f}")
 
-        # Feature extraction on both train and test datasets
-        train_features = []
-        test_features = []
+    # Plot the training loss
+    hf.autoencoder_plot_loss(all_losses)
 
-        autoencoder.eval()
+    # Feature extraction on both train and test datasets
+    train_features = []
+    test_features = []
 
-        #Extract Train Features
-        with torch.no_grad():
-            for data in train_data_loader:
-                inputs, _ = data
-                inputs = inputs.to(torch.float32)
-                _, latent_space = autoencoder(inputs)
-                train_features.append(latent_space)
+    autoencoder.eval()  # Set the model to evaluation mode
 
-        with torch.no_grad():
-            for data in test_data_loader:
-                inputs, _ = data
-                inputs = inputs.to(torch.float32)
-                _, latent_space = autoencoder(inputs)
-                test_features.append(latent_space)
+    # Extract features from train data
+    with torch.no_grad():
+        for data in train_data_loader:
+            inputs, _ = data
+            inputs = inputs.to(device).float()
+            _, latent_space = autoencoder.encoder(inputs)
+            train_features.append(latent_space.cpu())
 
-        #Conver the lists back to tensors
-        train_features = torch.cat(train_features, dim=0).cpu().numpy()
-        test_features = torch.cat(test_features, dim=0).cpu().numpy()
+    # Extract features from test data
+    with torch.no_grad():
+        for data in test_data_loader:
+            inputs = data[0].to(device).float()  # Test data does not have labels
+            _, latent_space = autoencoder.encoder(inputs)
+            test_features.append(latent_space.cpu())
 
-        return train_features, test_features
+    # Convert feature lists into tensors or numpy arrays
+    train_features = torch.cat(train_features, dim=0).cpu().numpy()
+    test_features = torch.cat(test_features, dim=0).cpu().numpy()
 
-
-
+    return train_features, test_features
