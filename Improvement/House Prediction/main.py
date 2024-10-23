@@ -1,7 +1,6 @@
 import data as d
 import feature_extraction as ft
 import model_compiler as mc
-import pandas as pd
 
 # File paths
 train_file_path = './data/train.csv'
