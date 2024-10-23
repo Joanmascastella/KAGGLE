@@ -20,14 +20,14 @@ def main():
     hidden_size = 64  # Latent space size (tunable)
     train_features, test_features = ft.extract_features(train_data_loader, test_data_loader, input_size, hidden_size)
 
-    # Step 3: Model Compilation, Training, and Testing
-    print("Compiling and training model with extracted features...")
-    results, loss = mc.compile_and_train_model(train_features, test_features)
-
-    # Return results and loss
-    print("Model training completed.")
-    print(f"Results: {results}")
-    print(f"Loss: {loss}")
+    # # Step 3: Model Compilation, Training, and Testing
+    # print("Compiling and training model with extracted features...")
+    # results, loss = mc.compile_and_train_model(train_features, test_features)
+    #
+    # # Return results and loss
+    # print("Model training completed.")
+    # print(f"Results: {results}")
+    # print(f"Loss: {loss}")
 
 if __name__ == '__main__':
     main()

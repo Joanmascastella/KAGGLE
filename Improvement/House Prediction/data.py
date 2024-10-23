@@ -5,6 +5,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from torch.utils.data import DataLoader, TensorDataset
 import torch
+from scipy.sparse import issparse
 
 # Function to load, clean, and preprocess the data
 def load_and_clean_data(train_data, test_data):
@@ -49,10 +50,18 @@ def load_and_clean_data(train_data, test_data):
 
     return X_train_cleaned, X_test_cleaned, y_train
 
+
 # Create DataLoader for PyTorch (optional)
 def get_data_loaders(X_train_cleaned, y_train, X_test_cleaned, batch_size=32):
+    # Check if the matrix is sparse and convert it to dense if necessary
+    if issparse(X_train_cleaned):
+        X_train_cleaned = X_train_cleaned.toarray()  # Convert to dense matrix
+    if issparse(X_test_cleaned):
+        X_test_cleaned = X_test_cleaned.toarray()  # Convert to dense matrix
+
     # Convert the data to PyTorch tensors
-    train_tensor = TensorDataset(torch.tensor(X_train_cleaned, dtype=torch.float32), torch.tensor(y_train.values, dtype=torch.float32))
+    train_tensor = TensorDataset(torch.tensor(X_train_cleaned, dtype=torch.float32),
+                                 torch.tensor(y_train.values, dtype=torch.float32))
     test_tensor = TensorDataset(torch.tensor(X_test_cleaned, dtype=torch.float32))
 
     # Create DataLoader objects

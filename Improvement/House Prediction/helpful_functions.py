@@ -1,5 +1,5 @@
 import torch
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 # Helper function to map computation to MPS (or CUDA/CPU)
 def get_device():

@@ -31,7 +31,7 @@ class Autoencoder(nn.Module):
 
 
 # Function to extract features using autoencoder
-def extract_features(train_data_loader, test_data_loader, input_size, hidden_size, learning_rate=0.0005, num_epochs=30):
+def extract_features(train_data_loader, test_data_loader, input_size, hidden_size, learning_rate=0.0005, num_epochs=120):
     device = hf.get_device()  # Get the appropriate device (MPS, CUDA, or CPU)
 
     # Initialize the autoencoder model and move to device
