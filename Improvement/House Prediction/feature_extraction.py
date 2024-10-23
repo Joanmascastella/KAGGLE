@@ -1,4 +1,67 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+class Autoencoder(nn.Module):
+    def __init__(self, input_size, hidden_size):
+        super(Autoencoder, self).__init__()
+
+        #Encoder
+        #Encoder deconstructs the data
+        self.encoder = nn.Sequential(
+            nn.Linear(input_size, 128),
+            nn.ReLU(),
+            nn.Linear(128,hidden_size)
+        )
+
+        #Decoder
+        #Decoder reconstructs the data and measure its loss
+        self.decoder = nn.Sequential(
+            nn.Linear(hidden_size, 128),
+            nn.ReLU(),
+            nn.Linear(128,input_size),
+            nn.Sigmoid()
+        )
+
+        #Forward Pass
+        # Perfoms encoder and reconstruction
+        def forward(self, x):
+            latent_space = self.encoder(x)
+            reconstructed = self.decoder(latent_space)
+            return reconstructed, latent_space
 
 
-# have a feature extraction function that takes in those two dataloaders and perform an autoencoder pass
-# to extract features and return them to main
+def extract_features(train_data_loader, test_data_loader, input_size, hidden_size, learning_rate=0.0005, num_epochs=30):
+    #Initializing autoencoder model
+    autoencoder = Autoencoder(input_size = input_size, hidden_size = hidden_size)
+
+    #Loss and optimizer
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(autoencoder.parameters(), lr=learning_rate)
+
+    #Training Loop
+    for epoch in range(num_epochs):
+        autoencoder.train()
+        running_loss = 0.0
+
+        for data in train_data_loader:
+            inputs, _ = data # For the autoencoder we don't need to pass the labels we just need the inputs
+            inputs = inputs.to(torch.float32)
+
+            #Forward Pass: reconstruct the input
+            reconstructed, _ = autoencoder(inputs)
+
+            #Compute reconstruction loss
+            loss = criterion(reconstructed, inputs)
+
+            #Backward pass and optimization
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+
+        print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_data_loader)}")
+
+
+
