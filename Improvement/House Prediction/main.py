@@ -1,9 +1,32 @@
+import data as d
+import feature_extraction as ft
+import model_compiler as mc
+import pandas as pd
+
+# File paths
+train_file_path = './data/train.csv'
+test_file_path = './data/test.csv'
+submission_file_path = './data/sample_submission.csv'
 
 
+def main():
+    # Step 1: Data Loading and Cleaning
+    print("Loading and cleaning data...")
+    train_data, test_data = d.load_and_clean_data(train_file_path, test_file_path)
 
-# here have a main function that first initializes the data paths, these paths are then passed to data.py which
-# returns the cleaned data in dataloaders for both train and test
-# Then call the feature extraction.py to run an auto encoder which does feature extraction, this returns the
-# extracted features
-# after doing so pass those extracted features to the model compiler.py to run training and testing
-# and return the results and loss
+    # Step 2: Feature Extraction (e.g., Autoencoder)
+    print("Extracting features...")
+    train_features, test_features = ft.extract_features(train_data, test_data)
+
+    # Step 3: Model Compilation, Training, and Testing
+    print("Compiling and training model...")
+    results, loss = mc.compile_and_train_model(train_features, test_features)
+
+    # Return results and loss
+    print("Model training completed.")
+    print(f"Results: {results}")
+    print(f"Loss: {loss}")
+
+
+if __name__ == '__main__':
+    main()
