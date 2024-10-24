@@ -31,7 +31,7 @@ class Autoencoder(nn.Module):
 
 
 # Function to extract features using autoencoder
-def extract_features(train_data_loader, test_data_loader, input_size, hidden_size, learning_rate=0.0005, num_epochs=120):
+def extract_features(train_data_loader, test_data_loader, input_size, hidden_size, learning_rate=0.0005, num_epochs=120, batch_size=32):
     device = hf.get_device()  # Get the appropriate device
 
     # Initialize the autoencoder model and move to device
@@ -95,8 +95,9 @@ def extract_features(train_data_loader, test_data_loader, input_size, hidden_siz
             latent_space = autoencoder.encoder(inputs)
             test_features.append(latent_space.cpu())
 
-    # Convert feature lists into tensors or numpy arrays
-    train_features = torch.cat(train_features, dim=0).cpu().numpy()
-    test_features = torch.cat(test_features, dim=0).cpu().numpy()
+    # Convert feature lists into tensors
+    train_features = torch.cat(train_features, dim=0)  # Concatenate all tensors in the list
+    test_features = torch.cat(test_features, dim=0)    # Concatenate all tensors in the list
 
+    # Return extracted features as tensors
     return train_features, test_features

@@ -5,7 +5,6 @@ import helpful_functions as hf
 from sklearn.model_selection import train_test_split
 import config
 
-
 # Define the fully connected network for house price prediction
 class HousePriceModel(nn.Module):
     def __init__(self, input_size):
@@ -54,27 +53,54 @@ def define_parameters(model):
 
     return model, optimizer, criterion, loss_list, accuracy_list, n_epochs
 
-def compile_and_train_model(train_features, test_features, model, optimizer, criterion, loss_list, accuracy_list, n_epochs):
-    print(train_features)  # Inspect the structure
+
+def compile_and_train_model(train_loader, test_loader, model, optimizer, criterion, loss_list, accuracy_list, n_epochs):
+    print(f"train_loader type: {type(train_loader)}, content: {train_loader}")
+
     def train(n_epochs):
         for epoch in range(n_epochs):
-            for x, y in train_features:
-                x, y = x.to(device), y.to(device)
-                z = model(x)
-                loss = criterion(z, y)
-                loss.backward()
-                optimizer.step()
+            model.train()  # Set the model to training mode
+            running_loss = 0.0
 
+            for x, y in train_loader:  # Assuming y is available in train_loader
+                x, y = x.to(device), y.to(device)  # Move input and target to device
+
+                # Forward pass
+                z = model(x)  # Model prediction
+                loss = criterion(z, y.view(-1, 1))  # Calculate loss (y may need reshaping)
+
+                # Backward pass and optimization
+                optimizer.zero_grad()  # Clear previous gradients
+                loss.backward()  # Compute gradients
+                optimizer.step()  # Update weights
+
+                running_loss += loss.item()  # Accumulate loss
+
+            # Average loss for the epoch
+            epoch_loss = running_loss / len(train_loader)
+            loss_list.append(epoch_loss)
+            print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {epoch_loss:.4f}")
+
+        # Perform Validation
+        model.eval()  # Set the model to evaluation mode
         correct = 0
-        #Perfom Validation
-        for x, y in test_features:
-            x, y = x.to(device), y.to(device)
-            z = model(x)
-            _, predicted = torch.max(z.data, 1)
-            correct += (predicted == y).sum().item()
-        accuracy = correct / len(test_features)
-        loss_list.append(loss.item())
-        accuracy_list.append(accuracy)
+        total = 0
 
-    train(n_epochs)
-    return loss_list, accuracy_list
+        with torch.no_grad():
+            for x, y in test_loader:
+                x, y = x.to(device), y.to(device)  # Move input and target to device
+                z = model(x)  # Model prediction
+
+                # Calculate the accuracy
+                predicted = z.view(-1)  # Reshape predictions
+                total += y.size(0)  # Total number of samples
+                # Compute mean absolute error for regression (you can use another metric if needed)
+                correct += torch.sum(torch.abs(predicted - y.view(
+                    -1)) < 0.5).item()  # Thresholding for correctness (adjust the threshold as needed)
+
+        accuracy = correct / total  # Calculate accuracy
+        accuracy_list.append(accuracy)  # Store accuracy for tracking
+        print(f"Validation Accuracy: {accuracy:.4f}")
+
+    train(n_epochs)  # Start training process
+    return accuracy_list, loss_list
