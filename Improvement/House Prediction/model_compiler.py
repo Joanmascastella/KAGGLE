@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
 from tensorflow.python.ops.metrics_impl import accuracy
-
 import helpful_functions as hf
 
 # Define the fully connected network for house price prediction
@@ -32,26 +31,6 @@ class HousePriceModel(nn.Module):
         return x
 
 device = hf.get_device()
-
-def define_parameters(model):
-    model = model
-
-    # Define the optimizer, learning rate, and loss function
-    learning_rate = 0.001
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    criterion = nn.MSELoss()  # Use Mean Squared Error loss for regression
-
-    # Train model
-    n_epochs = 100
-    loss_list = []
-    accuracy_list = []
-
-    return model, optimizer, criterion, loss_list, accuracy_list, n_epochs
-
-
-device = hf.get_device()
-
-
 
 def define_parameters(model):
     model = model
