@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import pandas as pd
-from tensorflow.python.ops.metrics_impl import accuracy
 import helpful_functions as hf
 
 # Define the fully connected network for house price prediction
