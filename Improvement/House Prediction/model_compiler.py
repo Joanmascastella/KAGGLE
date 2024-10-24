@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
+from tensorflow.python.ops.metrics_impl import accuracy
+
 import helpful_functions as hf
 
 # Define the fully connected network for house price prediction
@@ -73,6 +75,9 @@ def compile_and_train_model(train_loader, test_loader, model, optimizer, criteri
             model.train()  # Set the model to training mode
             running_loss = 0.0
             running_mae = 0.0
+            accurate_predictions = 0
+            total_predictions = 0
+            accuracy_threshold = 0.1  # 10% threshold for "accuracy"
 
             for x, y in train_loader:
                 x, y = x.to(device), y.to(device)
@@ -86,19 +91,25 @@ def compile_and_train_model(train_loader, test_loader, model, optimizer, criteri
                 loss.backward()
                 optimizer.step()
 
-                running_loss += loss.item()
-
-                # Calculate Mean Absolute Error (MAE) for accuracy tracking
+                # Calculate MAE
                 mae = torch.mean(torch.abs(y_pred - y)).item()
                 running_mae += mae
+
+                # Threshold-based accuracy calculation
+                accurate_predictions += torch.sum(torch.abs(y_pred - y) <= (accuracy_threshold * y)).item()
+                total_predictions += y.size(0)
+
+                running_loss += loss.item()
 
             # Average loss and MAE for the epoch
             epoch_loss = running_loss / len(train_loader)
             epoch_mae = running_mae / len(train_loader)
+            epoch_accuracy = (accurate_predictions / total_predictions) * 100  # Convert to percentage
+
             loss_list.append(epoch_loss)
             mae_list.append(epoch_mae)
 
-            print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {epoch_loss:.4f}, MAE: {epoch_mae:.4f}")
+            print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {epoch_loss:.4f}, MAE: {epoch_mae:.4f}, Accuracy: {epoch_accuracy:.2f}%")
 
     # Train the model
     train(n_epochs)

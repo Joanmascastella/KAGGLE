@@ -15,7 +15,7 @@ def load_and_clean_data(train_data, test_data):
 
     # Separate features and target in the training data
     y_train = train_data['SalePrice']
-    X_train = train_data.drop(['Id', 'Alley', 'MiscVal', 'Fence', 'MiscFeature', 'SalePrice'], axis=1)
+    X_train = train_data.drop(['SalePrice'], axis=1)
     X_test = test_data
 
     # Identify numerical and categorical columns
