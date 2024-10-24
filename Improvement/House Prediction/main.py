@@ -2,11 +2,15 @@ import data as d
 import feature_extraction as ft
 import model_compiler as mc
 import config
+import helpful_functions as hf
 
 # File paths
 train_file_path = './data/train.csv'
 test_file_path = './data/test.csv'
 submission_file_path = './data/sample_submission.csv'
+
+# Device
+device = hf.get_device()
 
 def main():
     # Step 1: Data Loading and Cleaning
@@ -23,8 +27,9 @@ def main():
 
     # Step 3: Model Compilation, Training, and Testing
     print("Compiling and training model with extracted features...")
-    config.INPUT_SIZE = train_features.shape[1]
-    results, loss = mc.compile_and_train_model(train_features, test_features)
+    model = mc.HousePriceModel(input_size=train_features.shape[1]).to(device) # Pass input_size directly
+    model, optimizer, criterion, loss_list, accuracy_list, n_epochs = mc.define_parameters(model)
+    results, loss = mc.compile_and_train_model(train_features, test_features, model, optimizer, criterion, loss_list, accuracy_list, n_epochs)
 
     # Return results and loss
     print("Model training completed.")

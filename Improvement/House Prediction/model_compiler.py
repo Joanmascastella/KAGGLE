@@ -5,11 +5,11 @@ import helpful_functions as hf
 from sklearn.model_selection import train_test_split
 import config
 
+
 # Define the fully connected network for house price prediction
 class HousePriceModel(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size):
         super(HousePriceModel, self).__init__()
-        input_size = config.INPUT_SIZE
 
         # Fully connected layers
         self.fc1 = nn.Linear(input_size, 128)  # First layer (input to hidden)
@@ -37,7 +37,44 @@ class HousePriceModel(nn.Module):
         x = self.output(x)  # Output is a single value (house price)
         return x
 
+device = hf.get_device()
 
-def compile_and_train_model(train_features, test_features):
+def define_parameters(model):
+    model = model
 
-    return True
+    # Define the optimizer, learning rate, and loss function
+    learning_rate = 0.1
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+    criterion = nn.CrossEntropyLoss()
+
+    # Train model
+    n_epochs = 100
+    loss_list = []
+    accuracy_list = []
+
+    return model, optimizer, criterion, loss_list, accuracy_list, n_epochs
+
+def compile_and_train_model(train_features, test_features, model, optimizer, criterion, loss_list, accuracy_list, n_epochs):
+    print(train_features)  # Inspect the structure
+    def train(n_epochs):
+        for epoch in range(n_epochs):
+            for x, y in train_features:
+                x, y = x.to(device), y.to(device)
+                z = model(x)
+                loss = criterion(z, y)
+                loss.backward()
+                optimizer.step()
+
+        correct = 0
+        #Perfom Validation
+        for x, y in test_features:
+            x, y = x.to(device), y.to(device)
+            z = model(x)
+            _, predicted = torch.max(z.data, 1)
+            correct += (predicted == y).sum().item()
+        accuracy = correct / len(test_features)
+        loss_list.append(loss.item())
+        accuracy_list.append(accuracy)
+
+    train(n_epochs)
+    return loss_list, accuracy_list

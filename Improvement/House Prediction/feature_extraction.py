@@ -85,14 +85,14 @@ def extract_features(train_data_loader, test_data_loader, input_size, hidden_siz
         for data in train_data_loader:
             inputs, _ = data
             inputs = inputs.to(device).float()
-            _, latent_space = autoencoder.encoder(inputs)
+            latent_space = autoencoder.encoder(inputs)
             train_features.append(latent_space.cpu())
 
     # Extract features from test data
     with torch.no_grad():
         for data in test_data_loader:
             inputs = data[0].to(device).float()  # Test data does not have labels
-            _, latent_space = autoencoder.encoder(inputs)
+            latent_space = autoencoder.encoder(inputs)
             test_features.append(latent_space.cpu())
 
     # Convert feature lists into tensors or numpy arrays
