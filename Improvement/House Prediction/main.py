@@ -1,3 +1,4 @@
+from torch.backends.mkl import verbose
 from torch.utils.data import TensorDataset, DataLoader
 import data as d
 import feature_extraction as ft
@@ -23,7 +24,7 @@ def main():
     # Step 2: Feature Extraction
     print("Extracting features using Autoencoder...")
     input_size = train_cleaned.shape[1]  # Number of input features
-    hidden_size = 64  # Latent space size (tunable)
+    hidden_size = 40  # Latent space size (tunable)
 
     # Extract features using the autoencoder
     train_features, test_features = ft.extract_features(train_data_loader, test_data_loader, input_size, hidden_size)
@@ -33,7 +34,7 @@ def main():
     # Use the number of features from the extracted features
     train_features_tensor = torch.tensor(train_features, dtype=torch.float32)
     input_size = train_features_tensor.shape[1]  # Get the number of features
-    model = mc.HousePriceModel(input_size=input_size).to(device)  # Correctly pass the input size
+    model = mc.HousePriceModel(input_size=input_size).to(device)
     model, optimizer, criterion, loss_list, accuracy_list, n_epochs = mc.define_parameters(model)
 
     # Prepare labels and test features
@@ -47,11 +48,9 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
-    # Now pass the DataLoader objects to the compile_and_train_model function
     results, loss = mc.compile_and_train_model(train_loader, test_loader, model, optimizer, criterion, loss_list,
                                                accuracy_list, n_epochs, submission_file_path)
 
-    # Return results and loss
     print("Model training completed.")
     print(f"Results: {results}")
     print(f"Loss: {loss}")

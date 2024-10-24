@@ -21,7 +21,7 @@ class Autoencoder(nn.Module):
             nn.Linear(hidden_size, 128),
             nn.ReLU(),
             nn.Linear(128, input_size),
-            nn.Sigmoid()  # Ensure output values are between 0 and 1
+            nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -31,7 +31,7 @@ class Autoencoder(nn.Module):
 
 
 # Function to extract features using autoencoder
-def extract_features(train_data_loader, test_data_loader, input_size, hidden_size, learning_rate=0.0005, num_epochs=120, batch_size=32):
+def extract_features(train_data_loader, test_data_loader, input_size, hidden_size, learning_rate=0.0005, num_epochs=120):
     device = hf.get_device()  # Get the appropriate device
 
     # Initialize the autoencoder model and move to device
@@ -50,7 +50,7 @@ def extract_features(train_data_loader, test_data_loader, input_size, hidden_siz
         running_loss = 0.0
 
         for data in train_data_loader:
-            inputs, _ = data  # For the autoencoder, we only need the inputs
+            inputs, _ = data
             inputs = inputs.to(device).float()  # Move data to device
 
             # Forward pass: reconstruct the input

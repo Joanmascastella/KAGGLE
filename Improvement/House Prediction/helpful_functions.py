@@ -1,5 +1,6 @@
 import torch
 import matplotlib.pyplot as plt
+import torch.nn.functional as F
 
 # Helper function to map computation to MPS (or CUDA/CPU)
 def get_device():
@@ -54,3 +55,20 @@ def autoencoder_plot_loss(losses):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+# From GPT
+# Custom RMSE criterion with log transformation
+def rmse_log_loss(y_pred, y):
+    # Clamp values to avoid taking log of zero or negative values
+    y_pred = torch.clamp(y_pred, min=1e-6)
+    y = torch.clamp(y, min=1e-6)
+
+    # Take the log of predictions and true values
+    y_pred_log = torch.log(y_pred)
+    y_log = torch.log(y)
+
+    # Calculate Mean Squared Error between log values
+    mse_loss = F.mse_loss(y_pred_log, y_log)
+
+    # Return Root Mean Squared Error (RMSE)
+    return torch.sqrt(mse_loss)

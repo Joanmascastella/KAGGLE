@@ -1,11 +1,8 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 import pandas as pd
 import helpful_functions as hf
-from sklearn.model_selection import train_test_split
-import config
 
 # Define the fully connected network for house price prediction
 class HousePriceModel(nn.Module):
@@ -14,7 +11,7 @@ class HousePriceModel(nn.Module):
 
         # Fully connected layers
         self.fc1 = nn.Linear(input_size, 128)  # First layer (input to hidden)
-        self.relu1 = nn.ReLU()  # Activation function
+        self.relu1 = nn.ReLU()
 
         self.fc2 = nn.Linear(128, 64)  # Second hidden layer
         self.relu2 = nn.ReLU()
@@ -23,12 +20,6 @@ class HousePriceModel(nn.Module):
         self.relu3 = nn.ReLU()
 
         self.output = nn.Linear(32, 1)  # Output layer (single value for house price prediction)
-
-        # Initialize weights using Kaiming (He) initialization for better convergence
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="relu")
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="relu")
-        torch.nn.init.kaiming_normal_(self.fc3.weight, nonlinearity="relu")
-        torch.nn.init.kaiming_normal_(self.output.weight, nonlinearity="relu")
 
     def forward(self, x):
         # Pass through the fully connected layers with ReLU activations
@@ -59,34 +50,19 @@ def define_parameters(model):
 device = hf.get_device()
 
 
-# Custom RMSE criterion with log transformation
-def rmse_log_loss(y_pred, y):
-    # Clamp values to avoid taking log of zero or negative values
-    y_pred = torch.clamp(y_pred, min=1e-6)
-    y = torch.clamp(y, min=1e-6)
-
-    # Take the log of predictions and true values
-    y_pred_log = torch.log(y_pred)
-    y_log = torch.log(y)
-
-    # Calculate Mean Squared Error between log values
-    mse_loss = F.mse_loss(y_pred_log, y_log)
-
-    # Return Root Mean Squared Error (RMSE)
-    return torch.sqrt(mse_loss)
 
 def define_parameters(model):
     model = model
 
     # Define the optimizer, learning rate, and custom loss function
-    learning_rate = 0.01
+    learning_rate = 0.001
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    criterion = rmse_log_loss  # Use this custom loss for training
+    criterion = hf.rmse_log_loss
 
-    n_epochs = 10
+    n_epochs = 100
     loss_list = []
-    mae_list = []  # Track Mean Absolute Error (MAE) for accuracy
+    mae_list = []
 
     return model, optimizer, criterion, loss_list, mae_list, n_epochs
 
@@ -134,9 +110,9 @@ def compile_and_train_model(train_loader, test_loader, model, optimizer, criteri
 
     with torch.no_grad():
         for x in test_loader:
-            x = x[0].to(device).float()  # Move input to device
+            x = x[0].to(device).float()
             y_pred = model(x).cpu().numpy()
-            predictions.extend(y_pred.flatten())  # Collect predictions
+            predictions.extend(y_pred.flatten())
 
     # Create submission dataframe and save to CSV
     submission_df = pd.read_csv(submission_file_path)  # Read sample submission file
