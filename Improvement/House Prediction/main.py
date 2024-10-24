@@ -49,13 +49,12 @@ def main():
 
     # Now pass the DataLoader objects to the compile_and_train_model function
     results, loss = mc.compile_and_train_model(train_loader, test_loader, model, optimizer, criterion, loss_list,
-                                               accuracy_list, n_epochs)
+                                               accuracy_list, n_epochs, submission_file_path)
 
     # Return results and loss
     print("Model training completed.")
     print(f"Results: {results}")
     print(f"Loss: {loss}")
-
 
 if __name__ == '__main__':
     main()

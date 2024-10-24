@@ -16,6 +16,35 @@ def get_device():
 
 
 # Helper function to plot the training loss
+def plot_metrics_with_dual_axes(loss_list, mae_list=None, title="Training Loss and Accuracy Over Epochs"):
+    """
+    Plots loss and accuracy (MAE) over epochs, using a secondary axis for MAE if needed.
+
+    :param loss_list: List of loss values collected during training.
+    :param mae_list: List of MAE values collected during training.
+    :param title: Title for the plot.
+    """
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    # Plot loss on the primary y-axis
+    ax1.set_xlabel('Epoch')
+    ax1.set_ylabel('Loss', color='tab:blue')
+    ax1.plot(loss_list, label="Loss", color='tab:blue')
+    ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+    # Plot MAE on the secondary y-axis
+    if mae_list is not None:
+        ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+        ax2.set_ylabel('MAE (Accuracy)', color='tab:orange')  # we already handled the x-label with ax1
+        ax2.plot(mae_list, label="MAE (Accuracy)", color='tab:orange')
+        ax2.tick_params(axis='y', labelcolor='tab:orange')
+
+    plt.title(title)
+    fig.tight_layout()  # to prevent overlap of y-axis labels
+    plt.grid(True)
+    plt.show()
+
+# Helper function to plot the training loss
 def autoencoder_plot_loss(losses):
     plt.figure(figsize=(10, 6))
     plt.plot(losses, label="Training Loss")

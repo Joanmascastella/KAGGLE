@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
+import pandas as pd
 import helpful_functions as hf
 from sklearn.model_selection import train_test_split
 import config
@@ -33,7 +35,7 @@ class HousePriceModel(nn.Module):
         x = self.relu1(self.fc1(x))
         x = self.relu2(self.fc2(x))
         x = self.relu3(self.fc3(x))
-        x = self.output(x)  # Output is a single value (house price)
+        x = torch.clamp(self.output(x), min=0)
         return x
 
 device = hf.get_device()
@@ -42,9 +44,9 @@ def define_parameters(model):
     model = model
 
     # Define the optimizer, learning rate, and loss function
-    learning_rate = 0.1
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
-    criterion = nn.CrossEntropyLoss()
+    learning_rate = 0.001
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    criterion = nn.MSELoss()  # Use Mean Squared Error loss for regression
 
     # Train model
     n_epochs = 100
@@ -54,53 +56,93 @@ def define_parameters(model):
     return model, optimizer, criterion, loss_list, accuracy_list, n_epochs
 
 
-def compile_and_train_model(train_loader, test_loader, model, optimizer, criterion, loss_list, accuracy_list, n_epochs):
-    print(f"train_loader type: {type(train_loader)}, content: {train_loader}")
+device = hf.get_device()
 
+
+# Custom RMSE criterion with log transformation
+def rmse_log_loss(y_pred, y):
+    # Clamp values to avoid taking log of zero or negative values
+    y_pred = torch.clamp(y_pred, min=1e-6)
+    y = torch.clamp(y, min=1e-6)
+
+    # Take the log of predictions and true values
+    y_pred_log = torch.log(y_pred)
+    y_log = torch.log(y)
+
+    # Calculate Mean Squared Error between log values
+    mse_loss = F.mse_loss(y_pred_log, y_log)
+
+    # Return Root Mean Squared Error (RMSE)
+    return torch.sqrt(mse_loss)
+
+def define_parameters(model):
+    model = model
+
+    # Define the optimizer, learning rate, and custom loss function
+    learning_rate = 0.001
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+    criterion = rmse_log_loss  # Use this custom loss for training
+
+    n_epochs = 100
+    loss_list = []
+    mae_list = []  # Track Mean Absolute Error (MAE) for accuracy
+
+    return model, optimizer, criterion, loss_list, mae_list, n_epochs
+
+
+def compile_and_train_model(train_loader, test_loader, model, optimizer, criterion, loss_list, mae_list, n_epochs, submission_file_path):
     def train(n_epochs):
         for epoch in range(n_epochs):
             model.train()  # Set the model to training mode
             running_loss = 0.0
+            running_mae = 0.0
 
-            for x, y in train_loader:  # Assuming y is available in train_loader
-                x, y = x.to(device), y.to(device)  # Move input and target to device
+            for x, y in train_loader:
+                x, y = x.to(device), y.to(device)
 
                 # Forward pass
-                z = model(x)  # Model prediction
-                loss = criterion(z, y.view(-1, 1))  # Calculate loss (y may need reshaping)
+                y_pred = model(x)
+                loss = criterion(y_pred, y)
 
                 # Backward pass and optimization
-                optimizer.zero_grad()  # Clear previous gradients
-                loss.backward()  # Compute gradients
-                optimizer.step()  # Update weights
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
-                running_loss += loss.item()  # Accumulate loss
+                running_loss += loss.item()
 
-            # Average loss for the epoch
+                # Calculate Mean Absolute Error (MAE) for accuracy tracking
+                mae = torch.mean(torch.abs(y_pred - y)).item()
+                running_mae += mae
+
+            # Average loss and MAE for the epoch
             epoch_loss = running_loss / len(train_loader)
+            epoch_mae = running_mae / len(train_loader)
             loss_list.append(epoch_loss)
-            print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {epoch_loss:.4f}")
+            mae_list.append(epoch_mae)
 
-        # Perform Validation
-        model.eval()  # Set the model to evaluation mode
-        correct = 0
-        total = 0
+            print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {epoch_loss:.4f}, MAE: {epoch_mae:.4f}")
 
-        with torch.no_grad():
-            for x, y in test_loader:
-                x, y = x.to(device), y.to(device)  # Move input and target to device
-                z = model(x)  # Model prediction
+    # Train the model
+    train(n_epochs)
+    hf.plot_metrics_with_dual_axes(loss_list, mae_list)
 
-                # Calculate the accuracy
-                predicted = z.view(-1)  # Reshape predictions
-                total += y.size(0)  # Total number of samples
-                # Compute mean absolute error for regression (you can use another metric if needed)
-                correct += torch.sum(torch.abs(predicted - y.view(
-                    -1)) < 0.5).item()  # Thresholding for correctness (adjust the threshold as needed)
+    # Predict for the test data and save results for submission
+    model.eval()  # Set the model to evaluation mode
+    predictions = []
 
-        accuracy = correct / total  # Calculate accuracy
-        accuracy_list.append(accuracy)  # Store accuracy for tracking
-        print(f"Validation Accuracy: {accuracy:.4f}")
+    with torch.no_grad():
+        for x in test_loader:
+            x = x[0].to(device).float()  # Move input to device
+            y_pred = model(x).cpu().numpy()
+            predictions.extend(y_pred.flatten())  # Collect predictions
 
-    train(n_epochs)  # Start training process
-    return accuracy_list, loss_list
+    # Create submission dataframe and save to CSV
+    submission_df = pd.read_csv(submission_file_path)  # Read sample submission file
+    submission_df['SalePrice'] = predictions  # Replace with predicted prices
+    submission_df.to_csv('submission.csv', index=False)  # Save the predictions
+
+    print("Predictions saved to submission.csv.")
+
+    return mae_list, loss_list
