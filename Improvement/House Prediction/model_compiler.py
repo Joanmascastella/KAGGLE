@@ -79,12 +79,12 @@ def define_parameters(model):
     model = model
 
     # Define the optimizer, learning rate, and custom loss function
-    learning_rate = 0.001
+    learning_rate = 0.01
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     criterion = rmse_log_loss  # Use this custom loss for training
 
-    n_epochs = 100
+    n_epochs = 10
     loss_list = []
     mae_list = []  # Track Mean Absolute Error (MAE) for accuracy
 
