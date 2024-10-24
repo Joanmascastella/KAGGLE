@@ -1,6 +1,7 @@
 import data as d
 import feature_extraction as ft
 import model_compiler as mc
+import config
 
 # File paths
 train_file_path = './data/train.csv'
@@ -22,6 +23,7 @@ def main():
 
     # Step 3: Model Compilation, Training, and Testing
     print("Compiling and training model with extracted features...")
+    config.INPUT_SIZE = train_features.shape[1]
     results, loss = mc.compile_and_train_model(train_features, test_features)
 
     # Return results and loss
