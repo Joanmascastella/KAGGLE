@@ -18,13 +18,17 @@ class HousePriceModel(nn.Module):
         self.fc3 = nn.Linear(64, 32)  # Third hidden layer
         self.relu3 = nn.ReLU()
 
-        self.output = nn.Linear(32, 1)  # Output layer (single value for house price prediction)
+        self.fc4 = nn.Linear(32, 16) # Fourth hidden layer
+        self.relu4 = nn.ReLU()
+
+        self.output = nn.Linear(16, 1)  # Output layer (single value for house price prediction)
 
     def forward(self, x):
         # Pass through the fully connected layers with ReLU activations
         x = self.relu1(self.fc1(x))
         x = self.relu2(self.fc2(x))
         x = self.relu3(self.fc3(x))
+        x = self.relu4(self.fc4(x))
         x = torch.clamp(self.output(x), min=0)
         return x
 
